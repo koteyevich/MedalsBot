@@ -1,36 +1,37 @@
 using System.Text;
 using LiteDB;
 using MedalsBot.Models;
+using MedalsBot.Utils;
 using User = MedalsBot.Models.User;
 
 namespace MedalsBot
 {
     public class Database
     {
-        private LiteDatabase? _db;
-        private ILiteCollection<User>? _userCollection;
+        private LiteDatabase? db;
+        private ILiteCollection<User>? userCollection;
 
 
         public void Initialize()
         {
             //! Database HAS to be initialized, otherwise every interaction with db is DOOMED TO FAIL
-            _db = new LiteDatabase(@"./medals.db");
-            _userCollection = _db.GetCollection<User>("users");
+            db = new LiteDatabase(@"./medals.db");
+            userCollection = db.GetCollection<User>("users");
 
             Console.WriteLine($"Users:\n" +
-                              $"Count: {_userCollection.Count()}\n");
+                              $"Count: {userCollection.Count()}\n");
         }
 
 
         /// <summary>
-        ///  
+        ///
         /// </summary>
         public void AddMedal(long recipientUserId, long chatId, string? recipientUsername, MedalType medalType,
             string explanation, string? originalMessage)
         {
             try
             {
-                var user = _userCollection?.FindOne(x => x.ChatId == chatId && x.Id == recipientUserId) ?? new User
+                var user = userCollection?.FindOne(x => x.ChatId == chatId && x.Id == recipientUserId) ?? new User
                 {
                     Id = recipientUserId,
                     ChatId = chatId,
@@ -49,7 +50,7 @@ namespace MedalsBot
                     AwardedAt = DateTime.UtcNow
                 });
 
-                _userCollection?.Upsert(user);
+                userCollection?.Upsert(user);
             }
             catch (Exception e)
             {
@@ -61,7 +62,7 @@ namespace MedalsBot
 
         public string ShowUserMedal(long userId, long chatId)
         {
-            var user = _userCollection?.FindOne(x => x.ChatId == chatId && x.Id == userId);
+            var user = userCollection?.FindOne(x => x.ChatId == chatId && x.Id == userId);
 
             if (user?.Medals == null || user.Medals.Count == 0)
             {
@@ -82,17 +83,17 @@ namespace MedalsBot
 
             foreach (var medal in user.Medals)
             {
-                var (emoji, name) = medalInfoMap.TryGetValue(medal.MedalType, out var info)
+                (string emoji, string name) = medalInfoMap.TryGetValue(medal.MedalType, out var info)
                     ? info
                     : ("", medal.MedalType.ToString());
 
-                var explanation = string.IsNullOrWhiteSpace(medal.Explanation) ? "<i>null</i>" : medal.Explanation;
-                var originalMsg = string.IsNullOrWhiteSpace(medal.OriginalMessage)
+                string? explanation = string.IsNullOrWhiteSpace(medal.Explanation) ? "<i>null</i>" : medal.Explanation;
+                string? originalMsg = string.IsNullOrWhiteSpace(medal.OriginalMessage)
                     ? "<i>нет сообщения</i>"
                     : medal.OriginalMessage;
-                var date = medal.AwardedAt.ToString("yyyy-MM-dd");
+                string date = medal.AwardedAt.ToString("yyyy-MM-dd");
 
-                var deepLink = $"https://t.me/medalkimedal_bot?start={medal.Id}";
+                string deepLink = $"https://t.me/medalkimedal_bot?start={medal.Id}";
 
                 sb.AppendLine(
                     $"{emoji} <b>{name}</b> — <b>За:</b> {explanation}\n" +
@@ -106,9 +107,9 @@ namespace MedalsBot
 
         public DeleteResult DeleteMedal(string medalId, long requesterUserId)
         {
-            if (_userCollection == null) return DeleteResult.Error;
+            if (userCollection == null) return DeleteResult.Error;
 
-            var users = _userCollection.Find(u => u.Medals != null);
+            var users = userCollection.Find(u => u.Medals != null);
 
             var user = users.FirstOrDefault(u => u.Medals.Any(m => m.Id == medalId));
 
@@ -121,7 +122,7 @@ namespace MedalsBot
 
             user.Medals.Remove(medal);
 
-            _userCollection.Update(user);
+            userCollection.Update(user);
 
             return DeleteResult.Success;
         }

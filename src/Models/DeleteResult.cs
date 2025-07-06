@@ -1,9 +1,10 @@
-namespace MedalsBot.Models;
-
-public enum DeleteResult
+namespace MedalsBot.Models
 {
-    Success,
-    NotFound,
-    Unauthorized,
-    Error
+    public enum DeleteResult
+    {
+        Success,
+        NotFound,
+        Unauthorized,
+        Error
+    }
 }

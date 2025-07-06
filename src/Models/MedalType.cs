@@ -1,10 +1,11 @@
-namespace MedalsBot.Models;
-
-public enum MedalType
+namespace MedalsBot.Models
 {
-    Trophy = 1,
-    OrdenMedal,
-    Gold,
-    Silver,
-    Bronze
+    public enum MedalType
+    {
+        Trophy = 1,
+        OrdenMedal,
+        Gold,
+        Silver,
+        Bronze
+    }
 }

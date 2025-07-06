@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MedalsBot.Commands;
+﻿using MedalsBot.Commands;
 using MedalsBot.Processors;
 using MedalsBot.Utils;
 using Telegram.Bot;
@@ -10,20 +9,20 @@ namespace MedalsBot
 {
     public static class Program
     {
-        private static TelegramBotClient? _bot;
-        private static CancellationTokenSource? _cts;
+        private static TelegramBotClient? bot;
+        private static CancellationTokenSource? cts;
         public static Database? Db;
-        private static long _botId;
-        private static CommandRegistry? CommandRegistry;
+        private static long botId;
+        private static CommandRegistry? commandRegistry;
 
         public static async Task Main()
         {
             Logger.Bot("Bot starting", "INFO");
 
-            _cts = new CancellationTokenSource();
-            _bot = new TelegramBotClient(Secrets.Token);
-            var me = await _bot.GetMe();
-            _botId = me.Id;
+            cts = new CancellationTokenSource();
+            bot = new TelegramBotClient(Secrets.TOKEN);
+            var me = await bot.GetMe();
+            botId = me.Id;
 
             Logger.Bot($"Bot connected as @{me.Username}", "SUCCESS");
 
@@ -47,31 +46,31 @@ namespace MedalsBot
             }
             */
 
-            CommandRegistry = new CommandRegistry(Db);
+            commandRegistry = new CommandRegistry(Db);
 
-            _bot.OnMessage += async (message, _) =>
+            bot.OnMessage += async (message, _) =>
             {
                 if (message.NewChatMembers != null)
                 {
-                    if (message.NewChatMembers.Any(m => m.Id == _botId))
+                    if (message.NewChatMembers.Any(m => m.Id == botId))
                     {
-                        await SendWelcomeMessage.SendWelcomeMessageAsync(message.Chat.Id, _bot);
-                        await CommandRegistry.SendHelpMessage(message, _bot);
+                        await SendWelcomeMessage.SendWelcomeMessageAsync(message.Chat.Id, bot);
+                        await commandRegistry.SendHelpMessage(message, bot);
                     }
                 }
 
                 await OnMessage(message);
             };
-            _bot.OnUpdate += OnUpdate;
+            bot.OnUpdate += OnUpdate;
 
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => _cts?.Cancel();
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => cts?.Cancel();
             Console.CancelKeyPress += (_, e) =>
             {
                 e.Cancel = true;
-                _cts?.Cancel();
+                cts?.Cancel();
             };
 
-            await Task.Delay(Timeout.Infinite, _cts.Token);
+            await Task.Delay(Timeout.Infinite, cts.Token);
             Logger.Bot("Bot shutting down", "INFO");
         }
 
@@ -88,11 +87,11 @@ namespace MedalsBot
                 {
                     if (message.Text.StartsWith("/start"))
                     {
-                        await StartProcessor.ProcessStartAsync(message, _bot, Db);
+                        await StartProcessor.ProcessStartAsync(message, bot, Db);
                     }
                     else
                     {
-                        await CommandRegistry?.HandleCommandAsync(message, _bot)!;
+                        await commandRegistry?.HandleCommandAsync(message, bot)!;
                     }
                 }
             }
@@ -108,9 +107,9 @@ namespace MedalsBot
 
         private static async Task OnError(Exception exception, long chatId)
         {
-            if (_bot != null)
+            if (bot != null)
             {
-                await _bot.SendMessage(chatId,
+                await bot.SendMessage(chatId,
                     $"<b>Ах!</b> <i>Что-то пошло не так...</i> \n<blockquote expandable><i>{exception.Message}</i></blockquote>",
                     ParseMode.Html);
             }

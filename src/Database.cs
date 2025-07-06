@@ -14,7 +14,7 @@ namespace MedalsBot
 
         public void Initialize()
         {
-            //! Database HAS to be initialized, otherwise every interaction with db is DOOMED TO FAIL
+            //! The database HAS to be initialized, otherwise every interaction with db is DOOMED TO FAIL
             db = new LiteDatabase(@"./medals.db");
             userCollection = db.GetCollection<User>("users");
 
@@ -36,10 +36,10 @@ namespace MedalsBot
                     Id = recipientUserId,
                     ChatId = chatId,
                     Username = recipientUsername,
-                    Medals = new List<Medal>()
+                    Medals = []
                 };
 
-                user.Medals ??= new List<Medal>();
+                user.Medals ??= [];
 
                 user.Medals.Add(new Medal
                 {
@@ -111,16 +111,19 @@ namespace MedalsBot
 
             var users = userCollection.Find(u => u.Medals != null);
 
-            var user = users.FirstOrDefault(u => u.Medals.Any(m => m.Id == medalId));
+            var user = users.FirstOrDefault(u => u.Medals != null && u.Medals.Any(m => m.Id == medalId));
 
             if (user == null) return DeleteResult.NotFound;
 
-            var medal = user.Medals.First(m => m.Id == medalId);
+            if (user.Medals != null)
+            {
+                var medal = user.Medals.First(m => m.Id == medalId);
 
-            if (user.Id != requesterUserId)
-                return DeleteResult.Unauthorized;
+                if (user.Id != requesterUserId)
+                    return DeleteResult.Unauthorized;
 
-            user.Medals.Remove(medal);
+                user.Medals.Remove(medal);
+            }
 
             userCollection.Update(user);
 

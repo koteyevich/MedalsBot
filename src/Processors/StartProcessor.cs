@@ -32,7 +32,7 @@ namespace MedalsBot.Processors
                         _ => "❌ Произошла ошибка при удалении медали."
                     };
 
-                    await bot.SendMessage(chatId, response, parseMode: ParseMode.Html);
+                    await bot!.SendMessage(chatId, response, parseMode: ParseMode.Html);
 
                     return; // prevent sending welcome msg after
                 }

@@ -11,7 +11,7 @@ namespace MedalsBot
     {
         private static TelegramBotClient? bot;
         private static CancellationTokenSource? cts;
-        public static Database? Db;
+        private static Database? db;
         private static long botId;
         private static CommandRegistry? commandRegistry;
 
@@ -26,27 +26,10 @@ namespace MedalsBot
 
             Logger.Bot($"Bot connected as @{me.Username}", "SUCCESS");
 
-            Db = new Database();
-            Db.Initialize();
+            db = new Database();
+            db.Initialize();
 
-            /*
-            try
-            {
-                Db = new Database("moderatorbot.sql");
-                Logger.Database("Database initialized", "SUCCESS");
-            }
-            catch (BotException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to initialize database: {ex.Message}", "DATABASE");
-                return;
-            }
-            */
-
-            commandRegistry = new CommandRegistry(Db);
+            commandRegistry = new CommandRegistry(db);
 
             bot.OnMessage += async (message, _) =>
             {
@@ -83,11 +66,11 @@ namespace MedalsBot
                     return;
                 }
 
-                if (message.Text.StartsWith("/"))
+                if (message.Text.StartsWith('/'))
                 {
                     if (message.Text.StartsWith("/start"))
                     {
-                        await StartProcessor.ProcessStartAsync(message, bot, Db);
+                        await StartProcessor.ProcessStartAsync(message, bot, db);
                     }
                     else
                     {
@@ -101,8 +84,9 @@ namespace MedalsBot
             }
         }
 
-        private static async Task OnUpdate(Update update)
+        private static Task OnUpdate(Update update)
         {
+            return Task.CompletedTask;
         }
 
         private static async Task OnError(Exception exception, long chatId)

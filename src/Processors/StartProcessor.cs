@@ -12,16 +12,16 @@ namespace MedalsBot.Processors
         public static async Task ProcessStartAsync(Message message, TelegramBotClient? bot, Database? db)
         {
             Logger.Command("Processing /start", "INFO");
-            var args = message.Text?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string[]? args = message.Text?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             if (message.Chat.Type == ChatType.Private)
             {
                 if (args?.Length > 1)
                 {
-                    var medalId = args[1];
+                    string medalId = args[1];
 
-                    var userId = message.From?.Id ?? 0;
-                    var chatId = message.Chat.Id;
+                    long userId = message.From?.Id ?? 0;
+                    long chatId = message.Chat.Id;
 
                     var result = db?.DeleteMedal(medalId, userId) ?? DeleteResult.Error;
                     string response = result switch
@@ -32,7 +32,7 @@ namespace MedalsBot.Processors
                         _ => "❌ Произошла ошибка при удалении медали."
                     };
 
-                    await bot.SendMessage(chatId, response, parseMode: ParseMode.Html);
+                    await bot!.SendMessage(chatId, response, parseMode: ParseMode.Html);
 
                     return; // prevent sending welcome msg after
                 }

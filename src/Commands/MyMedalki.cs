@@ -3,18 +3,19 @@ using MedalsBot.Processors;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace MedalsBot.Commands;
-
-public class MyMedalki : CommandBase
+namespace MedalsBot.Commands
 {
-    public override string Name => "/my_medalki";
-
-    public override string Description => "Твои медальки.";
-
-    public override string[] Aliases => ["/mm"];
-
-    protected override async Task ExecuteCoreAsync(Message message, TelegramBotClient? bot, Database? db)
+    public class MyMedalki : CommandBase
     {
-        await MyMedalkiProcessor.ProcessMyMedalkiAsync(message, bot, db);
+        public override string Name => "/my_medalki";
+
+        public override string Description => "Твои медальки.";
+
+        public override string[] Aliases => ["/mm"];
+
+        protected override async Task ExecuteCoreAsync(Message message, TelegramBotClient? bot, Database? db)
+        {
+            await MyMedalkiProcessor.ProcessMyMedalkiAsync(message, bot, db);
+        }
     }
 }
